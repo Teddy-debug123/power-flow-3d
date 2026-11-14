@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#05080d">
+  <meta name="description" content="POWER//FLOW：可旋转、可交互、可演示虚拟启动的计算机供电系统 3D 解剖实验室。">
+  <title>POWER//FLOW · 计算机供电 3D 解剖实验室</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23071016'/%3E%3Cpath d='M18 4 8 18h7l-1 10 11-15h-7l0-9Z' fill='%235ef2d6'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+    <canvas id="scene" aria-label="计算机供电系统三维场景"></canvas>
+    <div class="ambient ambient-a"></div>
+    <div class="ambient ambient-b"></div>
+    <div class="scanlines"></div>
+    <div class="vignette"></div>
+
+    <!-- ── 顶栏 ───────────────────────────────────── -->
+    <header class="topbar">
+      <a class="brand" href="#" id="brand-home" aria-label="回到全览">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 36 36" fill="none"><path d="M19.6 3 8.4 20.1h8.1L15.2 33l12.4-18.2h-8.5L19.6 3Z" stroke="currentColor" stroke-width="1.6" fill="rgba(94,242,214,.1)"/><path d="M5 8.5V5h3.5M31 27.5V31h-3.5" stroke="currentColor" stroke-width="1.2"/></svg>
+        </span>
+        <span class="brand-copy">
+          <span class="brand-name">POWER<span>//</span>FLOW</span>
+          <span class="brand-sub">计算机供电解剖实验室</span>
+        </span>
+      </a>
+
+      <div class="top-status">
+        <span class="status-chip" id="status-chip" data-state="standby">
+          <i class="dot"></i><span id="status-text">STANDBY · 5VSB</span>
+        </span>
+        <span class="sim-clock" id="sim-clock">T+00:00.000</span>
+      </div>
+
+      <nav class="top-actions" aria-label="全局控制">
+        <button class="icon-btn" id="btn-camera" aria-pressed="true" title="自动运镜（C）">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M4 8.5h3l1.2-2h7.6l1.2 2H20v10H4v-10Z" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="13" r="3.2" stroke="currentColor" stroke-width="1.5"/><path d="M17.5 11.5h.01" stroke="currentColor" stroke-width="2"/></svg>
+          <span class="btn-label">运镜</span>
+        </button>
+        <button class="icon-btn" id="btn-sound" aria-pressed="false" title="声音（M）">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M4 9.5h3.4L12 6v12l-4.6-3.5H4v-5Z" stroke="currentColor" stroke-width="1.5"/><path class="sound-wave" d="M15.5 9a4.2 4.2 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path class="sound-off" d="m15.5 9.5 5 5M20.5 9.5l-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <span class="btn-label" id="sound-label">静音</span>
+        </button>
+        <button class="icon-btn" id="btn-library" title="器件名录（L）">
+          <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="7" height="7" rx="1.2" stroke="currentColor" stroke-width="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.2" stroke="currentColor" stroke-width="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.2" stroke="currentColor" stroke-width="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.2" stroke="currentColor" stroke-width="1.5"/></svg>
+          <span class="btn-label">器件</span>
+        </button>
+        <button class="icon-btn" id="btn-help" title="操作指南（H）">
+          <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.2" stroke="currentColor" stroke-width="1.5"/><path d="M9.6 9.2a2.5 2.5 0 1 1 3.7 2.2c-.8.5-1.3 1-1.3 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M12 16.8h.01" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+        </button>
+        <button class="icon-btn" id="btn-fullscreen" title="全屏（F）">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </button>
+      </nav>
+    </header>
+
+    <!-- ── 左侧说明 ───────────────────────────────── -->
+    <section class="hero-copy" aria-label="简介">
+      <div class="eyebrow"><span>POWER DELIVERY EXPLORER</span><i></i><span>REV. 3.1</span></div>
+      <h1>从 <em>230V</em> 交流<br>到 <em>1.1V</em> 核心</h1>
+      <p>拆开一次侧、二次侧、VRM 与负载，观察每一瓦电如何被变换、隔离、稳压，并在启动瞬间逐级唤醒。</p>
+      <div class="hero-metrics">
+        <div><strong>48</strong><span>关键器件</span></div>
+        <div><strong>06</strong><span>启动阶段</span></div>
+        <div><strong>09</strong><span>供电观测节点</span></div>
+      </div>
+      <div class="drag-hint"><span class="mouse"></span>拖拽旋转 · 滚轮缩放 · 点击器件</div>
+    </section>
+
+    <!-- ── 视图预设 ───────────────────────────────── -->
+    <aside class="view-rail" aria-label="视角预设">
+      <button class="view-btn is-active" data-view="overview" title="系统全览（1）"><span class="view-glyph">◫</span><span>全览</span></button>
+      <button class="view-btn" data-view="psu" title="电源内部（2）"><span class="view-glyph">ϟ</span><span>电源</span></button>
+      <button class="view-btn" data-view="vrm" title="VRM 与 CPU（3）"><span class="view-glyph">▦</span><span>VRM</span></button>
+      <button class="view-btn" data-view="gpu" title="显卡与内存（4）"><span class="view-glyph">▤</span><span>负载</span></button>
+      <button class="view-btn" data-view="explode" title="分解视图（E）"><span class="view-glyph">⌗</span><span>分解</span></button>
+    </aside>
+
+    <!-- ── 3D 标签层 ──────────────────────────────── -->
+    <div class="labels-layer" id="labels-layer" aria-hidden="true"></div>
+    <div class="hover-tip" id="hover-tip" aria-hidden="true"></div>
+
+    <!-- ── 右侧遥测 ───────────────────────────────── -->
+    <aside class="telemetry glass" id="telemetry" aria-label="实时供电遥测">
+      <button class="panel-close telemetry-close" id="telemetry-close" aria-label="关闭遥测">×</button>
+      <div class="panel-head">
+        <div>
+          <span class="panel-kicker">LIVE TELEMETRY</span>
+          <h2>供电遥测</h2>
+        </div>
+        <span class="live-badge"><i></i>LIVE</span>
+      </div>
+
+      <div class="rail-list" id="rail-list"></div>
+
+      <div class="power-row">
+        <div class="power-total">
+          <span class="metric-label">整机功耗</span>
+          <strong id="power-value">1.8<span>W</span></strong>
+          <div class="power-spark" id="power-spark"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        </div>
+        <div class="mini-stats">
+          <div><span>VCORE</span><b id="mini-vcore">0.000<small>V</small></b></div>
+          <div><span>TEMP</span><b id="mini-temp">27<small>°C</small></b></div>
+          <div><span>FAN</span><b id="mini-fan">0<small>rpm</small></b></div>
+        </div>
+      </div>
+
+      <div class="scope-block">
+        <div class="scope-head"><span>供电波形 / 实时</span><span id="scope-mode">STANDBY</span></div>
+        <canvas id="scope" width="540" height="170"></canvas>
+        <div class="scope-legend"><i class="l12"></i>+12V<i class="lc"></i>VCORE<i class="lp"></i>PWR_OK</div>
+      </div>
+
+      <div class="post-row">
+        <div><span class="metric-label">POST CODE</span><b id="post-code">--</b></div>
+        <div><span class="metric-label">VRM PHASES</span><b id="phase-count">0 / 8</b></div>
+        <div class="phase-dots" id="phase-dots"></div>
+      </div>
+
+      <div class="log-block">
+        <div class="log-head"><span>BOOT TRACE</span><span id="log-count">0 EVENTS</span></div>
+        <div class="log-lines" id="log-lines">
+          <p><time>T+00:00.000</time><span>AC 230V 接入 · 5VSB 待机</span></p>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ── 器件详情 ───────────────────────────────── -->
+    <aside class="detail-panel glass" id="detail-panel" aria-label="器件详情" aria-hidden="true">
+      <button class="panel-close" id="detail-close" aria-label="关闭详情">×</button>
+      <div class="detail-head">
+        <span class="panel-kicker" id="detail-code">V-02</span>
+        <span class="cat-badge" id="detail-cat">VRM</span>
+        <h2 id="detail-name">DrMOS 智能功率级</h2>
+        <p class="detail-en" id="detail-en">DrMOS POWER STAGE</p>
+      </div>
+      <div class="detail-rail" id="detail-rail"></div>
+      <div class="detail-role" id="detail-role"></div>
+      <p class="detail-desc" id="detail-desc"></p>
+      <div class="detail-specs" id="detail-specs"></div>
+      <div class="detail-zone">
+        <span><i class="zone-dot"></i><b id="detail-zone">CPU 左侧</b></span>
+        <span class="detail-stage" id="detail-stage">阶段 S3 · VRM</span>
+      </div>
+      <div class="detail-actions">
+        <button class="btn btn-primary" id="detail-focus"><span class="target-icon">◎</span>在场景中定位</button>
+        <button class="btn btn-ghost" id="detail-rel">查看相关</button>
+      </div>
+      <div class="related-block">
+        <span class="metric-label">同一供电链路</span>
+        <div class="related-list" id="related-list"></div>
+      </div>
+    </aside>
+
+    <!-- ── 启动控制台 ─────────────────────────────── -->
+    <div class="stage-caption" id="stage-caption">
+      <span class="stage-code" id="cap-code">S0</span>
+      <p id="cap-text">市电已接入，辅助电源持续输出 5VSB；主轨与计算单元全部关闭。</p>
+    </div>
+
+    <footer class="dock" aria-label="虚拟启动控制台">
+      <div class="dock-power">
+        <button class="power-btn" id="power-btn" aria-label="启动系统">
+          <span class="power-icon">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M12 3v9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M6.4 6.8a7.5 7.5 0 1 0 11.2 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </span>
+          <span class="power-halo"></span>
+        </button>
+        <div class="power-text">
+          <span class="metric-label" id="power-label">SYSTEM POWER</span>
+          <strong id="power-action">启动系统</strong>
+          <small id="power-sub">PRESS SPACE</small>
+        </div>
+      </div>
+
+      <div class="timeline-wrap">
+        <div class="timeline-head">
+          <span>POWER-ON SEQUENCE</span>
+          <span id="timeline-time">T+00:00.0</span>
+        </div>
+        <div class="timeline" id="timeline"></div>
+      </div>
+
+      <div class="dock-actions">
+        <button class="dock-btn" id="btn-skip" title="快速完成启动" aria-label="快速完成启动">
+          <svg viewBox="0 0 24 24" fill="none"><path d="m5 5 8 7-8 7V5Zm9 0 6 7-6 7V5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+          <span>快进</span>
+        </button>
+        <button class="dock-btn" id="btn-reset" title="重置演示（R）" aria-label="重置演示">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M5 8a8 8 0 1 1-1 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M5 3v5h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>重置</span>
+        </button>
+      </div>
+    </footer>
+
+    <button class="catalog-fab" id="catalog-fab" aria-label="打开器件名录">
+      <span class="fab-grid">⌗</span>
+      <span><b>器件名录</b><small>48 COMPONENTS</small></span>
+      <span class="fab-count">48</span>
+    </button>
+
+    <!-- ── 器件名录抽屉 ───────────────────────────── -->
+    <div class="drawer-scrim" id="drawer-scrim"></div>
+    <aside class="drawer" id="drawer" aria-hidden="true" aria-label="器件名录">
+      <div class="drawer-head">
+        <div><span class="panel-kicker">COMPONENT ATLAS</span><h2>器件名录</h2></div>
+        <button class="panel-close static" id="drawer-close" aria-label="关闭名录">×</button>
+      </div>
+      <div class="search-box">
+        <svg viewBox="0 0 24 24" fill="none"><circle cx="10.5" cy="10.5" r="5.5" stroke="currentColor" stroke-width="1.5"/><path d="m15 15 4.5 4.5" stroke="currentColor" stroke-width="1.5"/></svg>
+        <input type="search" id="search-input" placeholder="搜索器件 / 英文名 / 电压轨" autocomplete="off">
+        <span id="search-count">48</span>
+      </div>
+      <div class="cat-filters" id="cat-filters"></div>
+      <div class="drawer-list" id="drawer-list"></div>
+    </aside>
+
+    <!-- ── 帮助 ───────────────────────────────────── -->
+    <div class="modal-scrim" id="help-scrim">
+      <section class="help-modal glass" role="dialog" aria-modal="true" aria-labelledby="help-title">
+        <button class="panel-close" id="help-close" aria-label="关闭帮助">×</button>
+        <span class="panel-kicker">FIELD MANUAL</span>
+        <h2 id="help-title">操作与阅读指南</h2>
+        <div class="help-grid">
+          <div>
+            <h3>操作</h3>
+            <ul>
+              <li><kbd>拖拽</kbd> 旋转三维场景，<kbd>滚轮</kbd> 缩放</li>
+              <li><kbd>点击</kbd> 器件查看功能、参数与所在链路</li>
+              <li><kbd>Space</kbd> 启动 / 重新演示，<kbd>R</kbd> 重置</li>
+              <li><kbd>E</kbd> 分解视图，<kbd>L</kbd> 器件名录，<kbd>H</kbd> 帮助</li>
+            </ul>
+          </div>
+          <div>
+            <h3>颜色图例</h3>
+            <div class="legend-list">
+              <span><i style="--c:#ff9e64"></i>AC 市电 / 3.3V</span>
+              <span><i style="--c:#ff6b6b"></i>PFC 高压母线</span>
+              <span><i style="--c:#ffd166"></i>+12V</span>
+              <span><i style="--c:#b58cff"></i>+5VSB 待机</span>
+              <span><i style="--c:#5ef2d6"></i>VCORE / VRM</span>
+            </div>
+          </div>
+        </div>
+        <p class="help-note">本页面为供电原理交互示意，器件比例、位置与数值经过视觉化处理，不对应任何具体品牌或型号。启动时序为加速演示，真实时序以毫秒计。<br><br><strong>安全提示：</strong>真实 ATX 电源内部存在 400V 级高压母线与大容量储能电容，断电后仍可能带电。请勿在未经过专业放电与安全培训的情况下拆解电源。</p>
+        <button class="btn btn-primary help-ok" id="help-ok">开始探索</button>
+      </section>
+    </div>
+
+    <div class="toast" id="toast" role="status"></div>
+
+    <div class="loader" id="loader">
+      <div class="loader-inner">
+        <div class="loader-mark">ϟ</div>
+        <div class="loader-name">POWER<span>//</span>FLOW</div>
+        <div class="loader-track"><i></i></div>
+        <div class="loader-status" id="loader-status">正在装配供电拓扑…</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="vendor/three-r128.min.js"></script>
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

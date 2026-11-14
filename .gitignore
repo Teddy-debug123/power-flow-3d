@@ -1,0 +1,14 @@
+# OS / editor clutter
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+
+# local preview / test artifacts
+.chrome-profile/
+.chrome/
+shots/
+tools/
+*.log
+node_modules/
