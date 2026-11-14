@@ -2,6 +2,9 @@
 
 一个可以直接打开、无需安装依赖的交互式 3D 网页：从墙插的 230V 交流电开始，逐级拆解 ATX 电源、主板供电、VRM、CPU / GPU / DDR5 负载，并用一段 6 阶段虚拟启动演示，观察电压轨、保护信号与能量流如何依次建立。
 
+**在线体验：<https://teddy-debug123.github.io/power-flow-3d/>**  
+**GitHub 仓库：<https://github.com/Teddy-debug123/power-flow-3d>**
+
 ![POWER//FLOW 预览](preview.png)
 
 ## 快速开始
